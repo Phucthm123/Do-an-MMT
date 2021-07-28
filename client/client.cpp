@@ -45,6 +45,8 @@ int main()
 		return 1;
 	}
 
+
+
 	// A while loop to send and receive data
 	char buf[BUF_SIZE];
 	std::string userInput;

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <WS2tcpip.h>
 #include <string>
+#include <thread>
 
 #pragma comment (lib, "Ws2_32.lib")
 
@@ -31,14 +32,13 @@ int main()
 	sockaddr_in hint;
 	hint.sin_family = AF_INET;
 	hint.sin_port = htons(8080);
-	hint.sin_addr.S_un.S_addr = INADDR_ANY; // Could also use inet_pton .... 
+	hint.sin_addr.S_un.S_addr = INADDR_ANY; 
 
 	bind(listening, (sockaddr*)&hint, sizeof(hint));
 
 	// Tell Winsock the socket is for listening 
 	listen(listening, SOMAXCONN);
 
-	// Wait for a connection
 	sockaddr_in client;
 	int clientSize = sizeof(client);
 
@@ -90,12 +90,13 @@ int main()
 		send(clientSocket, buf, bytesReceived + 1, 0);
 
 	}
-
-	// Close the socket
+	//Close the socket
 	closesocket(clientSocket);
 
-	// Cleanup winsock
+	//Cleanup winsock
 	WSACleanup();
 
 	return 0;
 }
+
+

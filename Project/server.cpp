@@ -1,44 +1,41 @@
-#include<iostream>
-#include<WS2tcpip.h>+
-#include<winsock2.h>
-#include<stdio.h>
+#include <iostream>
+#include <WS2tcpip.h>
+#include <string>
 
-#define PORT 8080
-#define IP "127.0.0.1"
-#define BUF_SIZE 2048
+#pragma comment (lib, "Ws2_32.lib")
 
-#pragma comment (lib, "ws2_32.lib")
+using namespace std;
 
-void main()
+int main()
 {
 	// Initialze winsock
 	WSADATA wsData;
 	WORD ver = MAKEWORD(2, 2);
-	int iResult = WSAStartup(ver, &wsData);
-	if (iResult != 0)
+
+	int wsOk = WSAStartup(ver, &wsData);
+	if (wsOk != 0)
 	{
-		std::cout << "Can't Initialize winsock! Try again" << "\n";
-		return;
+		cout << "Can't Initialize winsock! Quitting" << endl;
+		return 1;
 	}
 
-	// Create the socket
+	// Create a socket
 	SOCKET listening = socket(AF_INET, SOCK_STREAM, 0);
 	if (listening == INVALID_SOCKET)
 	{
-		std::cout << "Can't create socket!" << "\n";
-		return;
+		cout << "Can't create a socket! Quitting" << endl;
+		return 1;
 	}
 
-	// Bind the socket to an IP address and port
+	// Bind the ip address and port to a socket
 	sockaddr_in hint;
 	hint.sin_family = AF_INET;
-	hint.sin_port = htons(PORT);
-	hint.sin_addr.S_un.S_addr = INADDR_ANY;
+	hint.sin_port = htons(8080);
+	hint.sin_addr.S_un.S_addr = INADDR_ANY; // Could also use inet_pton .... 
 
 	bind(listening, (sockaddr*)&hint, sizeof(hint));
 
-	// Tell Winsock the socketis for listening
-
+	// Tell Winsock the socket is for listening 
 	listen(listening, SOMAXCONN);
 
 	// Wait for a connection
@@ -47,55 +44,58 @@ void main()
 
 	SOCKET clientSocket = accept(listening, (sockaddr*)&client, &clientSize);
 
-	char host[NI_MAXHOST];
-	char service[NI_MAXHOST];
+	char host[NI_MAXHOST];		// Client's remote name
+	char service[NI_MAXSERV];	// Service (i.e. port) the client is connect on
 
-	ZeroMemory(host, NI_MAXHOST);
-	ZeroMemory(service, NI_MAXHOST);
+	ZeroMemory(host, NI_MAXHOST); // same as memset(host, 0, NI_MAXHOST);
+	ZeroMemory(service, NI_MAXSERV);
 
-	if (getnameinfo((sockaddr*)&client, sizeof(client), host, NI_MAXHOST, service, NI_MAXHOST, 0) == 0)
+	if (getnameinfo((sockaddr*)&client, sizeof(client), host, NI_MAXHOST, service, NI_MAXSERV, 0) == 0)
 	{
-		std::cout << host << " connected on port " << service << "\n";
-
+		cout << host << " connected on port " << service << endl;
 	}
 	else
 	{
 		inet_ntop(AF_INET, &client.sin_addr, host, NI_MAXHOST);
-		std::cout << host << " connected on port " << service << ntohs(client.sin_port) << "\n";
-
+		cout << host << " connected on port " << ntohs(client.sin_port) << endl;
 	}
 
-	//close listening socket
-
+	// Close listening socket
 	closesocket(listening);
 
-	// while loop to chat between server and client
-
-
-	char buf[BUF_SIZE];
+	// While loop: accept and echo message back to client
+	char buf[4096];
 
 	while (true)
 	{
-		ZeroMemory(buf, BUF_SIZE);
+		ZeroMemory(buf, 4096);
 
-		int byteReceived = recv(clientSocket, buf, BUF_SIZE, 0);
-		if (byteReceived == SOCKET_ERROR)
+		// Wait for client to send data
+		int bytesReceived = recv(clientSocket, buf, 4096, 0);
+		if (bytesReceived == SOCKET_ERROR)
 		{
-			std::cout << "Error in recv() !" << "\n";
+			cerr << "Error in recv(). Quitting" << endl;
 			break;
 		}
 
-		if (byteReceived == 0)
+		if (bytesReceived == 0)
 		{
-			std::cout << "Client disconnected !" << "\n";
+			cout << "Client disconnected " << endl;
 			break;
 		}
-		send(clientSocket, buf, byteReceived + 1, 0);
+
+		cout << string(buf, 0, bytesReceived) << endl;
+
+		// Echo message back to client
+		send(clientSocket, buf, bytesReceived + 1, 0);
+
 	}
 
+	// Close the socket
 	closesocket(clientSocket);
 
 	// Cleanup winsock
 	WSACleanup();
 
+	return 0;
 }

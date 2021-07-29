@@ -1,6 +1,7 @@
 #include <iostream>
 #include <WS2tcpip.h>
 #include <string>
+#include <vector>
 #include <thread>
 
 #pragma comment (lib, "Ws2_32.lib")
@@ -44,10 +45,10 @@ int main()
 
 	SOCKET clientSocket = accept(listening, (sockaddr*)&client, &clientSize);
 
-	char host[NI_MAXHOST];		// Client's remote name
-	char service[NI_MAXSERV];	// Service (i.e. port) the client is connect on
+	char host[NI_MAXHOST];		 
+	char service[NI_MAXSERV];	
 
-	ZeroMemory(host, NI_MAXHOST); // same as memset(host, 0, NI_MAXHOST);
+	ZeroMemory(host, NI_MAXHOST); 
 	ZeroMemory(service, NI_MAXSERV);
 
 	if (getnameinfo((sockaddr*)&client, sizeof(client), host, NI_MAXHOST, service, NI_MAXSERV, 0) == 0)
@@ -74,7 +75,7 @@ int main()
 		int bytesReceived = recv(clientSocket, buf, 4096, 0);
 		if (bytesReceived == SOCKET_ERROR)
 		{
-			cerr << "Error in recv(). Quitting" << endl;
+			cout << "Error in recv(). Quitting" << endl;
 			break;
 		}
 

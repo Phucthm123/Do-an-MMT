@@ -72,7 +72,7 @@ int main()
 		ZeroMemory(buf, 4096);
 
 		// Wait for client to send data
-		int bytesReceived = recv(clientSocket, buf, 4096, 0);
+		int bytesReceived = recv(clientSocket, buf, 4096, 0); 
 		if (bytesReceived == SOCKET_ERROR)
 		{
 			cout << "Error in recv(). Quitting" << endl;

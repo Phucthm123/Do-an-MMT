@@ -7,6 +7,11 @@
 #pragma comment (lib, "Ws2_32.lib")
 
 using namespace std;
+struct username
+{
+	std::string username;
+	std::string pass;
+};
 
 int main()
 {
